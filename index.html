@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KELYN — Datastor.io Discovery Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #6caf45;
+  --green-dark: #4f9018;
+  --green-light: #f0f8ea;
+  --black: #0c0c0c;
+  --gray: #888888;
+  --gray-light: #e8e8e4;
+  --gray-bg: #f4f4f0;
+  --white: #ffffff;
+  --off-white: #F8F9F5;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--off-white); color: var(--black); font-size: 15px; min-height: 100vh; display: flex; justify-content: center; padding: 2rem 1rem; }
+#shell { width: 100%; max-width: 680px; }
+.logo-row { display: flex; align-items: center; gap: 16px; margin-bottom: 1.75rem; }
+.logo-svg-wrap { height: 28px; display: flex; align-items: center; }
+.logo-svg-wrap svg { height: 28px; width: auto; }
+.logo-divider { width: 1px; height: 18px; background: var(--gray-light); }
+.logo-sub { font-size: 13px; color: var(--gray); font-weight: 500; }
+.card { background: var(--white); border-radius: 20px; border: 1px solid var(--gray-light); padding: 2rem; }
+.tab-bar { display: flex; gap: 4px; margin-bottom: 2rem; background: var(--gray-bg); border-radius: 12px; padding: 4px; }
+.tab { flex: 1; padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--gray); border-radius: 9px; transition: all 0.15s; font-family: inherit; text-align: center; }
+.tab:hover { color: var(--black); }
+.tab.active { background: var(--white); color: var(--black); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.panel { display: none; }
+.panel.active { display: block; }
+.prog-row { display: flex; align-items: center; gap: 5px; margin-bottom: 2rem; flex-wrap: wrap; }
+.prog-pip { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-light); flex-shrink: 0; transition: background 0.25s, width 0.25s; }
+.prog-pip.done { background: var(--green); }
+.prog-pip.active { background: var(--green); width: 22px; border-radius: 4px; }
+.prog-label { font-size: 11px; color: var(--gray); margin-left: 4px; font-weight: 500; }
+.stage-eye { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--green); margin-bottom: 8px; }
+.ask-text { font-size: 22px; font-weight: 800; line-height: 1.3; color: var(--black); margin-bottom: 1.5rem; letter-spacing: -0.02em; }
+.insight-box { background: var(--gray-bg); padding: 11px 14px; margin-bottom: 1.25rem; border-left: 3px solid var(--gray-light); }
+.insight-eye { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gray); margin-bottom: 4px; }
+.insight-text { font-size: 12.5px; color: #555; line-height: 1.55; }
+.opts { display: flex; flex-direction: column; gap: 9px; margin-bottom: 1.75rem; }
+.opt { display: flex; align-items: center; gap: 13px; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--gray-light); background: var(--white); cursor: pointer; text-align: left; width: 100%; transition: border-color 0.12s, background 0.12s; font-family: inherit; }
+.opt:hover { border-color: var(--green); background: var(--green-light); }
+.opt.sel { border-color: var(--green); background: var(--green-light); }
+.opt-letter { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--gray-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--gray); transition: all 0.12s; }
+.opt.sel .opt-letter { border-color: var(--green); background: var(--green); color: #fff; }
+.opt-label { font-size: 14px; font-weight: 600; color: var(--black); flex: 1; line-height: 1.4; }
+.nav { display: flex; align-items: center; gap: 10px; }
+.btn-back { background: none; border: 1.5px solid var(--gray-light); border-radius: 50px; padding: 9px 20px; font-size: 13px; font-weight: 600; color: var(--gray); cursor: pointer; font-family: inherit; transition: all 0.12s; }
+.btn-back:hover { border-color: #bbb; color: var(--black); }
+.btn-next { background: var(--green); border: none; border-radius: 50px; padding: 10px 24px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; font-family: inherit; opacity: 0.3; pointer-events: none; transition: opacity 0.15s; }
+.btn-next.on { opacity: 1; pointer-events: all; }
+.btn-next.on:hover { background: var(--green-dark); }
+.res-pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 50px; background: var(--green); color: #fff; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 12px; }
+.res-title { font-size: 26px; font-weight: 800; margin-bottom: 5px; letter-spacing: -0.03em; color: var(--black); }
+.res-sub { font-size: 13px; color: var(--gray); margin-bottom: 1.5rem; line-height: 1.6; font-weight: 500; }
+.divider { border: none; border-top: 1px solid var(--gray-light); margin: 1.5rem 0; }
+.res-eye { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gray); margin-bottom: 10px; }
+.why-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
+.why-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-top: 8px; flex-shrink: 0; }
+.why-text { font-size: 13.5px; line-height: 1.55; color: #333; font-weight: 500; }
+.talk-box { background: var(--green-light); border: 1.5px solid rgba(108,175,69,0.4); border-radius: 12px; padding: 14px 16px; margin-bottom: 1.25rem; }
+.talk-eye { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--green-dark); margin-bottom: 6px; }
+.talk-text { font-size: 13px; color: #2d5a0a; line-height: 1.65; font-style: italic; font-weight: 500; }
+.steps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.step-btn { border: 1.5px solid var(--gray-light); border-radius: 12px; padding: 12px 14px; font-size: 12.5px; cursor: pointer; text-align: left; background: var(--white); color: var(--black); font-family: inherit; transition: border-color 0.12s, background 0.12s; }
+.step-btn:hover { border-color: var(--green); background: var(--green-light); }
+.step-btn.pri { border-color: var(--green); background: var(--green-light); }
+.step-btn strong { display: block; font-weight: 700; margin-bottom: 2px; font-size: 13px; }
+.step-btn span { font-size: 11px; color: var(--gray); font-weight: 500; }
+.pain-summary { margin-bottom: 1.5rem; padding: 12px 14px; border-radius: 12px; background: var(--gray-bg); }
+.pain-eye { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gray); margin-bottom: 6px; }
+.pain-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.pain-tag { font-size: 11px; padding: 3px 9px; border-radius: 20px; background: var(--white); color: #555; font-weight: 500; border: 1px solid var(--gray-light); }
+.restart { background: none; border: 1.5px solid var(--gray-light); border-radius: 50px; padding: 8px 18px; font-size: 12px; font-weight: 600; color: var(--gray); cursor: pointer; margin-top: 1.25rem; font-family: inherit; transition: all 0.12s; }
+.restart:hover { border-color: #bbb; color: var(--black); }
+.comp-filters, .obj-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.comp-filter, .obj-filter { border: 1.5px solid var(--gray-light); border-radius: 50px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; background: var(--white); color: var(--gray); font-family: inherit; transition: all 0.12s; }
+.comp-filter:hover, .obj-filter:hover { border-color: var(--green); color: var(--green); }
+.comp-filter.active, .obj-filter.active { background: var(--green); border-color: var(--green); color: #fff; }
+.comp-card { border: 1.5px solid var(--gray-light); border-radius: 14px; overflow: hidden; margin-bottom: 10px; }
+.comp-head { padding: 14px 16px; }
+.comp-name { font-size: 15px; font-weight: 800; margin-bottom: 2px; letter-spacing: -0.01em; }
+.comp-type { font-size: 12px; font-weight: 500; }
+.comp-body { padding: 14px 16px; background: var(--white); display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.comp-col-eye { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.comp-row { display: flex; gap: 7px; align-items: flex-start; margin-bottom: 6px; }
+.comp-icon { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+.comp-text { font-size: 12px; line-height: 1.45; color: #333; font-weight: 500; }
+.obj-card { border: 1.5px solid var(--gray-light); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; background: var(--white); }
+.obj-q { font-size: 13px; font-weight: 700; margin-bottom: 7px; color: var(--black); }
+.obj-a { font-size: 13px; color: #555; line-height: 1.65; font-weight: 500; }
+@media (max-width: 480px) {
+  .steps-grid { grid-template-columns: 1fr; }
+  .comp-body { grid-template-columns: 1fr; }
+  .card { padding: 1.25rem; }
+  .ask-text { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div class="logo-row">
+    <div class="logo-svg-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 502.39 105.76">
+        <defs><style>.cls-1{fill:#6caf45}.cls-2{fill:#0c0c0c}</style></defs>
+        <polygon class="cls-2" points="142.59 1.76 142.59 44.86 181.81 1.76 199.19 1.76 167.93 36.03 201.81 69.62 183.56 69.62 159.29 45.54 137.44 69.62 129.77 69.62 129.77 1.76 142.59 1.76"/>
+        <polygon class="cls-2" points="300.33 1.76 300.33 56.81 355.09 56.71 355.09 69.53 287.51 69.62 287.51 1.76 300.33 1.76"/>
+        <polygon class="cls-2" points="352.17 1.76 378.87 33.41 405.47 1.76 422.27 1.76 385.28 45.74 385.28 69.62 372.37 69.62 372.37 45.74 335.38 1.76 352.17 1.76"/>
+        <polygon class="cls-2" points="436.08 1.76 489.57 48.17 489.57 1.76 502.39 1.76 502.39 69.62 494.72 69.62 441.22 23.21 441.22 69.62 428.41 69.62 428.41 1.76 436.08 1.76"/>
+        <path class="cls-1" d="M261.83,40.21h-46.13c-2.18,0-3.95-2.26-3.95-5.04s1.77-5.05,3.95-5.05h46.13c2.18,0,3.94,2.26,3.94,5.05s-1.76,5.04-3.94,5.04"/>
+        <path class="cls-1" d="M270.62,13.19h-54.23c-2.56,0-4.64-2.26-4.64-5.04s2.08-5.05,4.64-5.05h54.23c2.56,0,4.64,2.26,4.64,5.05s-2.08,5.04-4.64,5.04"/>
+        <path class="cls-1" d="M270.62,68.31h-54.23c-2.56,0-4.64-2.26-4.64-5.04s2.08-5.05,4.64-5.05h54.23c2.56,0,4.64,2.26,4.64,5.05s-2.08,5.04-4.64,5.04"/>
+        <path class="cls-1" d="M34.4,25.25h-.51c-1.17,0-2.12-.95-2.12-2.11V7.79c0-1.17.95-2.12,2.12-2.12h.51c1.16,0,2.11.95,2.11,2.12v15.35c0,1.16-.95,2.11-2.11,2.11"/>
+        <path class="cls-1" d="M43.67,47.83h-.51c-1.17,0-2.12-.95-2.12-2.11V2.11C41.05.95,41.99,0,43.16,0h.51c1.16,0,2.11.95,2.11,2.11v43.61c0,1.16-.95,2.11-2.11,2.11"/>
+        <path class="cls-1" d="M52.95,39.66h-.51c-1.17,0-2.12-.95-2.12-2.11V7.78c0-1.16.95-2.11,2.12-2.11h.51c1.16,0,2.11.95,2.11,2.11v29.76c0,1.16-.95,2.11-2.11,2.11"/>
+        <path class="cls-1" d="M62.23,27.48h-.51c-1.17,0-2.12-.95-2.12-2.11V2.11c0-1.16.95-2.11,2.12-2.11h.51c1.16,0,2.11.95,2.11,2.11v23.26c0,1.16-.95,2.11-2.11,2.11"/>
+        <path class="cls-1" d="M71.51,25.25h-.51c-1.17,0-2.12-.95-2.12-2.11V7.79c0-1.17.95-2.12,2.12-2.12h.51c1.16,0,2.11.95,2.11,2.12v15.35c0,1.16-.95,2.11-2.11,2.11"/>
+        <path class="cls-1" d="M34.4,79.5h-.51c-1.17,0-2.12.95-2.12,2.11v16.36c0,1.16.95,2.11,2.12,2.11h.51c1.16,0,2.11-.95,2.11-2.11v-16.36c0-1.16-.95-2.11-2.11-2.11"/>
+        <path class="cls-1" d="M43.67,70.27h-.51c-1.17,0-2.12.95-2.12,2.11v31.26c0,1.17.95,2.12,2.12,2.12h.51c1.16,0,2.11-.95,2.11-2.12v-31.26c0-1.16-.95-2.11-2.11-2.11"/>
+        <path class="cls-1" d="M52.95,65.82h-.51c-1.17,0-2.12.95-2.12,2.11v29.76c0,1.16.95,2.11,2.12,2.11h.51c1.16,0,2.11-.95,2.11-2.11v-29.76c0-1.16-.95-2.11-2.11-2.11"/>
+        <path class="cls-1" d="M62.23,75.05h-.51c-1.17,0-2.12.95-2.12,2.11v26.48c0,1.17.95,2.12,2.12,2.12h.51c1.16,0,2.11-.95,2.11-2.12v-26.48c0-1.16-.95-2.11-2.11-2.11"/>
+        <path class="cls-1" d="M71.51,79.5h-.51c-1.17,0-2.12.95-2.12,2.11v16.42c0,1.16.95,2.11,2.12,2.11h.51c1.16,0,2.11-.95,2.11-2.11v-16.42c0-1.16-.95-2.11-2.11-2.11"/>
+        <path class="cls-1" d="M78.63,71.07v.51c0,1.17.95,2.12,2.11,2.12h17.32c1.16,0,2.11-.95,2.11-2.12v-.51c0-1.16-.95-2.11-2.11-2.11h-17.32c-1.16,0-2.11.95-2.11,2.11"/>
+        <path class="cls-1" d="M67.66,61.79v.51c0,1.17.95,2.12,2.11,2.12h33.96c1.17,0,2.11-.95,2.11-2.12v-.51c0-1.16-.94-2.11-2.11-2.11h-33.96c-1.16,0-2.11.95-2.11,2.11"/>
+        <path class="cls-1" d="M60.98,52.51v.51c0,1.17.95,2.12,2.11,2.12h31.23c1.16,0,2.11-.95,2.11-2.12v-.51c0-1.16-.95-2.11-2.11-2.11h-31.23c-1.16,0-2.11.95-2.11,2.11"/>
+        <path class="cls-1" d="M67.6,43.23v.51c0,1.17.95,2.12,2.11,2.12h34.02c1.16,0,2.11-.95,2.11-2.12v-.51c0-1.16-.95-2.11-2.11-2.11h-34.02c-1.16,0-2.11.95-2.11,2.11"/>
+        <path class="cls-1" d="M78.65,33.95v.51c0,1.17.95,2.12,2.11,2.12h17.36c1.16,0,2.11-.95,2.11-2.12v-.51c0-1.16-.95-2.11-2.11-2.11h-17.36c-1.16,0-2.11.95-2.11,2.11"/>
+        <path class="cls-1" d="M5.67,71.07v.51c0,1.17.95,2.12,2.11,2.12h18.53c1.16,0,2.11-.95,2.11-2.12v-.51c0-1.16-.95-2.11-2.11-2.11H7.78c-1.16,0-2.11.95-2.11,2.11"/>
+        <path class="cls-1" d="M0,61.79v.51c0,1.17.95,2.12,2.11,2.12h24.2c1.17,0,2.12-.95,2.12-2.12v-.51c0-1.16-.95-2.11-2.12-2.11H2.11c-1.16,0-2.11.95-2.11,2.11"/>
+        <path class="cls-1" d="M9.23,52.51v.51c0,1.17.95,2.12,2.11,2.12h14.97c1.16,0,2.11-.95,2.11-2.12v-.51c0-1.16-.95-2.11-2.11-2.11h-14.97c-1.16,0-2.11.95-2.11,2.11"/>
+        <path class="cls-1" d="M.04,43.23v.51c0,1.17.95,2.12,2.11,2.12h24.16c1.17,0,2.12-.95,2.12-2.12v-.51c0-1.16-.95-2.11-2.12-2.11H2.15c-1.16,0-2.11.95-2.11,2.11"/>
+        <path class="cls-1" d="M5.67,33.95v.51c0,1.17.95,2.12,2.11,2.12h18.53c1.16,0,2.11-.95,2.11-2.12v-.51c0-1.16-.95-2.11-2.11-2.11H7.78c-1.16,0-2.11.95-2.11,2.11"/>
+      </svg>
+    </div>
+    <div class="logo-divider"></div>
+    <span class="logo-sub">Discovery Guide</span>
+  </div>
+
+  <div class="card">
+    <div class="tab-bar">
+      <button class="tab active" onclick="switchTab('discovery')">Discovery</button>
+      <button class="tab" onclick="switchTab('competitive')">Competitive intel</button>
+      <button class="tab" onclick="switchTab('objections')">Objections</button>
+    </div>
+    <div id="tab-discovery" class="panel active"></div>
+    <div id="tab-competitive" class="panel"></div>
+    <div id="tab-objections" class="panel"></div>
+  </div>
+</div>
+
+<script>
+const FLOW = {
+  start: {
+    stage: "Qualification", ask: "Do they currently have Commvault?", insight: null,
+    opts: [
+      { label: "Yes — active Commvault deployment", next: "has_cv", tags: ["cv_owned"], summary: "Has Commvault" },
+      { label: "No — no Commvault today", next: "no_cv", tags: ["no_cv"], summary: "No Commvault" },
+      { label: "Evaluating / unsure", next: "evaluating", tags: ["evaluating"], summary: "Evaluating" }
+    ]
+  },
+  has_cv: {
+    stage: "Pain discovery — Commvault customer", ask: "What's the primary challenge with their Commvault setup?", insight: null,
+    opts: [
+      { label: "No dedicated admin / stretched team", next: "hcv_admin", tags: ["pain_admin"], summary: "Admin gap" },
+      { label: "Support issues with Commvault", next: "hcv_support", tags: ["pain_support"], summary: "Support pain" },
+      { label: "Cost concerns", next: "hcv_cost", tags: ["pain_cost"], summary: "Cost pain" },
+      { label: "Aging infrastructure or capacity issues", next: "hcv_infra", tags: ["pain_infra"], summary: "Aging HW" },
+      { label: "Ransomware / recovery confidence", next: "hcv_ransomware", tags: ["pain_ransomware"], summary: "Ransomware concern" }
+    ]
+  },
+  hcv_admin: {
+    stage: "No dedicated admin", ask: "What happens when that person is out of office?",
+    insight: "This exposes the single point of failure. Let them sit with the answer — most haven't thought through the risk explicitly.",
+    opts: [
+      { label: "Nobody covers it — jobs run unmonitored", next: "rto_rpo", tags: ["no_owner", "admin_gap_severe"], summary: "No OOO coverage" },
+      { label: "Someone else tries but doesn't really know it", next: "rto_rpo", tags: ["tribal_knowledge", "admin_gap_severe"], summary: "Tribal knowledge" },
+      { label: "They have a runbook but it's outdated", next: "rto_rpo", tags: ["admin_gap_moderate"], summary: "Outdated runbook" },
+      { label: "It hasn't been a problem yet", next: "rto_rpo", tags: ["admin_stretched"], summary: "Stretched team" }
+    ]
+  },
+  hcv_support: {
+    stage: "Support issues", ask: "Can you elaborate on where support is failing you?",
+    insight: "Let them tell the story. The more specific the frustration, the stronger the case for Datastor's managed service model.",
+    opts: [
+      { label: "Response time is too slow", next: "rto_rpo", tags: ["support_slow"], summary: "Slow support" },
+      { label: "Can't triage — tickets go in circles", next: "rto_rpo", tags: ["support_triage"], summary: "Bad triage" },
+      { label: "Always told the fix requires buying PS", next: "rto_rpo", tags: ["support_ps_push"], summary: "PS upsell" },
+      { label: "Support quality is inconsistent", next: "rto_rpo", tags: ["support_inconsistent"], summary: "Inconsistent support" }
+    ]
+  },
+  hcv_cost: {
+    stage: "Cost concerns", ask: "What's driving that cost?",
+    insight: "Understanding the specific cost driver shapes whether you lead with a bundle, managed service, or licensing conversation.",
+    opts: [
+      { label: "SW licensing is too expensive", next: "rto_rpo", tags: ["cost_sw"], summary: "SW cost" },
+      { label: "Hardware costs are the issue", next: "rto_rpo", tags: ["cost_hw"], summary: "HW cost" },
+      { label: "Too much spend on Professional Services", next: "rto_rpo", tags: ["cost_ps"], summary: "PS cost" },
+      { label: "Internal admin labor is the real cost", next: "rto_rpo", tags: ["cost_admin"], summary: "Admin labor cost" }
+    ]
+  },
+  hcv_infra: {
+    stage: "Aging infrastructure", ask: "How old is the hardware?",
+    insight: "Out-of-support hardware is an unacceptable risk — one failure can be unrecoverable with no vendor support path.",
+    opts: [
+      { label: "1–2 years old", next: "rto_rpo", tags: ["infra_new"], summary: "HW 1-2 yrs" },
+      { label: "3–4 years old", next: "rto_rpo", tags: ["infra_aging"], summary: "HW 3-4 yrs" },
+      { label: "5+ years — likely out of support", next: "rto_rpo", tags: ["infra_aging_severe"], summary: "HW out of support" },
+      { label: "Not sure", next: "rto_rpo", tags: ["infra_unknown"], summary: "HW age unknown" }
+    ]
+  },
+  hcv_ransomware: {
+    stage: "Ransomware readiness", ask: "Do you feel like you're enabled on all of Commvault's ransomware capabilities?",
+    insight: "Many Commvault customers are underutilizing the platform's ransomware features. This opens a capability conversation before moving to recovery confidence.",
+    opts: [
+      { label: "Yes — configured and tested them", next: "rto_rpo", tags: ["ransomware_mature"], summary: "Ransomware mature" },
+      { label: "Partially — use some but not all", next: "rto_rpo", tags: ["cv_ransomware_gap_partial"], summary: "Ransomware partial" },
+      { label: "Not sure what's available", next: "rto_rpo", tags: ["cv_ransomware_gap"], summary: "Ransomware unsure" },
+      { label: "No — haven't set any of that up", next: "rto_rpo", tags: ["cv_ransomware_gap_severe"], summary: "Ransomware not configured" }
+    ]
+  },
+  no_cv: {
+    stage: "Pain discovery — no Commvault", ask: "What's triggering the look at new solutions?", insight: null,
+    opts: [
+      { label: "Current solution isn't scaling with the business", next: "ncv_scaling", tags: ["pain_scaling"], summary: "Scaling pain" },
+      { label: "Ransomware / recovery concerns", next: "ncv_ransomware", tags: ["pain_ransomware"], summary: "Ransomware concern" },
+      { label: "Cost — current solution is too expensive or unpredictable", next: "ncv_cost", tags: ["pain_cost"], summary: "Cost pain" },
+      { label: "Compliance — platform doesn't meet audit or insurance requirements", next: "ncv_compliance", tags: ["pain_compliance"], summary: "Compliance gap" },
+      { label: "Support — poor experience with current vendor", next: "ncv_support", tags: ["pain_support"], summary: "Support pain" },
+      { label: "Too complex to manage / too many products", next: "ncv_complex", tags: ["pain_complex"], summary: "Too complex" },
+      { label: "Contract renewal — natural forcing function", next: "ncv_renewal", tags: ["pain_renewal"], summary: "Renewal trigger" }
+    ]
+  },
+  ncv_scaling: {
+    stage: "Scaling issues", ask: "Can you elaborate on what challenges these scaling issues cause?",
+    insight: "Growth-driven pain often has budget authority behind it — scaling problems are visible to leadership and easier to build a business case around.",
+    opts: [
+      { label: "Backup jobs taking too long — missing windows", next: "rto_rpo", tags: ["scaling_jobs"], summary: "Missing backup windows" },
+      { label: "Running out of storage capacity", next: "rto_rpo", tags: ["scaling_capacity"], summary: "Capacity limit" },
+      { label: "Can't cover new workloads or cloud environments", next: "rto_rpo", tags: ["scaling_workloads"], summary: "Workload gaps" },
+      { label: "Performance degrading as data grows", next: "rto_rpo", tags: ["scaling_perf"], summary: "Perf degrading" }
+    ]
+  },
+  ncv_ransomware: {
+    stage: "Ransomware readiness", ask: "How would you rate your ability to recover from a cyber attack — including validating clean identity from Active Directory before restoring applications?",
+    insight: "Many prospects have never thought through AD validation as part of recovery. This exposes a gap most aren't aware of and differentiates Commvault's capabilities immediately.",
+    opts: [
+      { label: "High confidence — tested the full process including AD", next: "rto_rpo", tags: ["ncv_ransomware_mature"], summary: "AD-tested recovery" },
+      { label: "Moderate — could recover but haven't tested AD validation", next: "rto_rpo", tags: ["ncv_ransomware_moderate"], summary: "No AD test" },
+      { label: "Low — haven't tested recovery at all", next: "rto_rpo", tags: ["ncv_ransomware_low"], summary: "No recovery test" },
+      { label: "We don't have a process for this", next: "rto_rpo", tags: ["ncv_ransomware_low"], summary: "No recovery process" }
+    ]
+  },
+  ncv_cost: {
+    stage: "Cost concerns", ask: "What's driving that cost?",
+    insight: "The specific cost driver shapes the solution. SW licensing points to a bundle play; admin labor points to managed service; PS spend points to both.",
+    opts: [
+      { label: "SW licensing is too expensive", next: "rto_rpo", tags: ["cost_sw"], summary: "SW cost" },
+      { label: "Hardware costs are the issue", next: "rto_rpo", tags: ["cost_hw"], summary: "HW cost" },
+      { label: "Too much spend on Professional Services", next: "rto_rpo", tags: ["cost_ps"], summary: "PS cost" },
+      { label: "Internal admin labor is the real cost", next: "rto_rpo", tags: ["cost_admin"], summary: "Admin labor cost" }
+    ]
+  },
+  ncv_compliance: {
+    stage: "Compliance gap", ask: "What specific requirement is your current platform failing to meet?",
+    insight: "Pinpointing the exact compliance gap lets you map directly to Datastor's architecture defaults. Immutability and air-gap are built in — not add-ons.",
+    opts: [
+      { label: "Immutability — no WORM or tamper-proof copies", next: "rto_rpo", tags: ["compliance_immutability"], summary: "No immutability" },
+      { label: "Air-gap — no isolated offline copy", next: "rto_rpo", tags: ["compliance_airgap"], summary: "No air-gap" },
+      { label: "Retention — can't meet policy requirements", next: "rto_rpo", tags: ["compliance_retention"], summary: "Retention gap" },
+      { label: "Reporting — can't produce audit-ready evidence", next: "rto_rpo", tags: ["compliance_reporting"], summary: "Reporting gap" }
+    ]
+  },
+  ncv_support: {
+    stage: "Support issues", ask: "Can you elaborate on where support is failing you?",
+    insight: "A bad support story during a real incident is the most persuasive content you can surface. Let them tell it in detail.",
+    opts: [
+      { label: "Response time is too slow", next: "rto_rpo", tags: ["support_slow"], summary: "Slow support" },
+      { label: "Can't triage — tickets go in circles", next: "rto_rpo", tags: ["support_triage"], summary: "Bad triage" },
+      { label: "Always told the fix requires buying PS", next: "rto_rpo", tags: ["support_ps_push"], summary: "PS upsell" },
+      { label: "Support quality is inconsistent", next: "rto_rpo", tags: ["support_inconsistent"], summary: "Inconsistent support" }
+    ]
+  },
+  ncv_complex: {
+    stage: "Complexity / too many products", ask: "How many products do you manage in your backup stack — and how many people does it take to manage it?",
+    insight: "High product count with a small team is a powerful risk indicator. Datastor's single-platform bundle directly addresses this — one vendor, one contract, one team.",
+    opts: [
+      { label: "1–2 products, 1 person", next: "rto_rpo", tags: ["many_products_light"], summary: "Small stack" },
+      { label: "3–4 products, 1–2 people", next: "rto_rpo", tags: ["many_products_moderate"], summary: "Growing stack" },
+      { label: "5+ products, small team", next: "rto_rpo", tags: ["many_products_small_team"], summary: "Sprawling + thin team" },
+      { label: "Lost count — grown organically over time", next: "rto_rpo", tags: ["many_products_large"], summary: "Organic sprawl" }
+    ]
+  },
+  ncv_renewal: {
+    stage: "Contract renewal", ask: "When does your current contract expire — and has the incumbent already come back with a renewal quote?",
+    insight: "If the incumbent has already quoted, there's competitive urgency. If not, you have time to build preference before they anchor the prospect on their number.",
+    opts: [
+      { label: "Expires within 3 months — no quote yet", next: "rto_rpo", tags: ["renewal_soon"], summary: "Renewal <3mo" },
+      { label: "Expires within 3 months — incumbent has quoted", next: "rto_rpo", tags: ["renewal_hot"], summary: "Renewal hot" },
+      { label: "Expires in 6–12 months", next: "rto_rpo", tags: ["renewal_soon"], summary: "Renewal 6-12mo" },
+      { label: "12+ months — just starting to plan", next: "rto_rpo", tags: ["renewal_nurture"], summary: "Early planning" }
+    ]
+  },
+  evaluating: {
+    stage: "Trigger identification", ask: "What triggered this evaluation?", insight: null,
+    opts: [
+      { label: "Hardware refresh or contract renewal", next: "eval_refresh", tags: ["trigger_refresh"], summary: "HW / renewal" },
+      { label: "Incident or near-miss event", next: "eval_incident", tags: ["trigger_incident"], summary: "Incident" },
+      { label: "New IT leadership or mandate", next: "eval_leadership", tags: ["trigger_leadership"], summary: "New leadership" },
+      { label: "Compliance or audit requirement", next: "eval_compliance", tags: ["trigger_compliance"], summary: "Compliance trigger" },
+      { label: "New program or project", next: "eval_program", tags: ["trigger_program"], summary: "New program" }
+    ]
+  },
+  eval_refresh: {
+    stage: "Hardware refresh / contract renewal", ask: "When does their current contract expire — and has the incumbent come back with a renewal quote?",
+    insight: "If the incumbent has already quoted, there is competitive urgency. Use that to compress the sales cycle.",
+    opts: [
+      { label: "Expires within 3 months — no quote yet", next: "rto_rpo", tags: ["renewal_soon"], summary: "Renewal <3mo" },
+      { label: "Expires within 3 months — incumbent has quoted", next: "rto_rpo", tags: ["renewal_hot"], summary: "Renewal hot" },
+      { label: "Expires in 6–12 months", next: "rto_rpo", tags: ["renewal_soon"], summary: "Renewal 6-12mo" },
+      { label: "12+ months — just starting to plan", next: "rto_rpo", tags: ["renewal_nurture"], summary: "Early planning" }
+    ]
+  },
+  eval_incident: {
+    stage: "Incident or near-miss", ask: "What happened — and how long did it take you to recover?",
+    insight: "A firsthand incident story is the strongest business case you can have. Get the full details — scope, duration, business impact. These become your ROI anchors.",
+    opts: [
+      { label: "Ransomware attack — full or partial recovery", next: "rto_rpo", tags: ["incident_ransomware", "ransomware_incident"], summary: "Ransomware incident" },
+      { label: "Hardware failure — data loss or extended outage", next: "rto_rpo", tags: ["incident_hardware"], summary: "HW failure" },
+      { label: "Near-miss — caught it before it became critical", next: "rto_rpo", tags: ["incident_near_miss"], summary: "Near-miss" },
+      { label: "Failed recovery test — couldn't restore", next: "rto_rpo", tags: ["incident_failed_test", "cyber_untested"], summary: "Failed restore" }
+    ]
+  },
+  eval_leadership: {
+    stage: "New leadership mandate", ask: "What has new leadership specifically said they want to change?",
+    insight: "New leadership means a new power map and new budget authority. Align to their mandate and get in front of them directly if possible.",
+    opts: [
+      { label: "Consolidate vendors / reduce complexity", next: "rto_rpo", tags: ["leadership_consolidate"], summary: "Consolidate" },
+      { label: "Modernize — move from CapEx to OpEx", next: "rto_rpo", tags: ["leadership_opex"], summary: "CapEx → OpEx" },
+      { label: "Improve security and ransomware posture", next: "rto_rpo", tags: ["leadership_security"], summary: "Security mandate" },
+      { label: "Reduce cost across the IT stack", next: "rto_rpo", tags: ["leadership_cost"], summary: "Cost mandate" }
+    ]
+  },
+  eval_compliance: {
+    stage: "Compliance requirement", ask: "What specific requirement is your current platform failing to meet?",
+    insight: "Pinpointing the exact compliance gap lets you map directly to Datastor's architecture. Immutability and air-gap are defaults — not add-ons.",
+    opts: [
+      { label: "Immutability — no WORM or tamper-proof copies", next: "rto_rpo", tags: ["compliance_immutability"], summary: "No immutability" },
+      { label: "Air-gap — no isolated offline copy", next: "rto_rpo", tags: ["compliance_airgap"], summary: "No air-gap" },
+      { label: "Retention — can't meet policy requirements", next: "rto_rpo", tags: ["compliance_retention"], summary: "Retention gap" },
+      { label: "Reporting — can't produce audit-ready evidence", next: "rto_rpo", tags: ["compliance_reporting"], summary: "Reporting gap" }
+    ]
+  },
+  eval_program: {
+    stage: "New program or project", ask: "What does the new program require from a data protection standpoint that the current environment can't support?",
+    insight: "New programs often come with new budget. Understand the scope and timeline — this may be a greenfield opportunity attached to a larger initiative.",
+    opts: [
+      { label: "New cloud or hybrid workloads to protect", next: "rto_rpo", tags: ["program_cloud"], summary: "New cloud workloads" },
+      { label: "New compliance or regulatory requirements", next: "rto_rpo", tags: ["program_compliance", "compliance_new"], summary: "New compliance req" },
+      { label: "Faster RTO/RPO than current solution provides", next: "rto_rpo", tags: ["program_rto"], summary: "Tighter RTO/RPO" },
+      { label: "New site or acquisition needing coverage", next: "rto_rpo", tags: ["program_site"], summary: "New site" }
+    ]
+  },
+  rto_rpo: {
+    stage: "Recovery objectives", ask: "Do they have defined RTO and RPO targets?",
+    insight: "RTO = how fast they need to be back up. RPO = how much data loss is acceptable. Many orgs have never formally defined these — that gap is your opening.",
+    opts: [
+      { label: "Yes — documented and board-approved", next: "rto_rpo_gap", tags: ["rto_defined"], summary: "RTO defined" },
+      { label: "Informal — IT has a rough idea, not documented", next: "rto_rpo_gap", tags: ["rto_informal"], summary: "RTO informal" },
+      { label: "No — never discussed or defined", next: "cyber_restore", tags: ["rto_undefined"], summary: "No RTO/RPO" }
+    ]
+  },
+  rto_rpo_gap: {
+    stage: "Recovery objectives", ask: "What are their RTO / RPO targets — and do they believe they can actually hit them?",
+    insight: "The gap between stated target and tested reality is the business case. If they can't meet their own targets, that's a critical risk they own today.",
+    opts: [
+      { label: "RTO under 4 hours — confident they can hit it", next: "cyber_restore", tags: ["rto_confident_tight"], summary: "RTO <4hr confident" },
+      { label: "RTO 4–24 hours — think they can hit it", next: "cyber_restore", tags: ["rto_confident_loose"], summary: "RTO 4-24hr" },
+      { label: "They have a target but have never tested it", next: "cyber_restore", tags: ["rto_untested"], summary: "RTO untested" },
+      { label: "They know they can't hit the target — gap acknowledged", next: "cyber_restore", tags: ["rto_cant_hit"], summary: "Can't hit RTO" }
+    ]
+  },
+  cyber_restore: {
+    stage: "Cyber restore testing", ask: "Have they ever done a full cyber restore test — full workload recovery in an isolated environment, not just a file restore?",
+    insight: "Most orgs run backup jobs that complete successfully but have never validated end-to-end recovery. This is the single most powerful gap to expose on a discovery call.",
+    opts: [
+      { label: "Yes — tested recently, passed", next: "vendor_support", tags: ["cyber_tested_passed"], summary: "Cyber tested OK" },
+      { label: "Yes — tested but found issues", next: "vendor_support", tags: ["cyber_tested_issues"], summary: "Cyber test failed" },
+      { label: "Partial — tested some workloads, not all", next: "vendor_support", tags: ["cyber_partial"], summary: "Partial cyber test" },
+      { label: "No — never done a full recovery test", next: "vendor_support", tags: ["cyber_untested"], summary: "No cyber test" }
+    ]
+  },
+  vendor_support: {
+    stage: "Vendor support quality", ask: "When something goes wrong with backup, what does their support experience look like?",
+    insight: "Support quality is a powerful emotional lever. A bad support story during an incident is often the real tipping point toward change.",
+    opts: [
+      { label: "They call a vendor helpdesk — long hold times", next: "vendor_support_depth", tags: ["support_helpdesk_slow"], summary: "Helpdesk slow" },
+      { label: "They rely on an MSP or reseller — inconsistent quality", next: "vendor_support_depth", tags: ["support_msp_inconsistent"], summary: "MSP inconsistent" },
+      { label: "Dedicated contact but response is slow", next: "vendor_support_depth", tags: ["support_dedicated_slow"], summary: "Dedicated but slow" },
+      { label: "They handle it internally — no external support", next: "vendor_support_depth", tags: ["support_none"], summary: "No external support" }
+    ]
+  },
+  vendor_support_depth: {
+    stage: "Vendor support quality", ask: "Have they ever had an incident where they needed emergency support — and what happened?",
+    insight: "Let them tell the story. A firsthand account of bad support during a real incident is the most persuasive content you can surface.",
+    opts: [
+      { label: "Yes — support was slow, issue escalated badly", next: "pain_admin_final", tags: ["bad_vendor_incident"], summary: "Bad incident support" },
+      { label: "Yes — resolved eventually, but very painful", next: "pain_admin_final", tags: ["painful_vendor_incident"], summary: "Painful incident" },
+      { label: "No major incident yet — but worried it could happen", next: "pain_admin_final", tags: ["support_worry"], summary: "Worried" },
+      { label: "Haven't had a serious incident", next: "pain_admin_final", tags: ["support_untested"], summary: "No incident yet" }
+    ]
+  },
+  pain_admin_final: {
+    stage: "Management ownership", ask: "How is backup managed day-to-day — is there a dedicated owner?", insight: null,
+    opts: [
+      { label: "One generalist wearing many hats", next: "__END__", tags: ["admin_stretched"], summary: "Generalist admin" },
+      { label: "No dedicated owner — tribal knowledge", next: "__END__", tags: ["no_owner"], summary: "No owner" },
+      { label: "Outsourced MSP, but unhappy", next: "__END__", tags: ["msp_unhappy"], summary: "MSP unhappy" },
+      { label: "Dedicated team but overwhelmed", next: "__END__", tags: ["team_overwhelmed"], summary: "Team overwhelmed" }
+    ]
+  }
+};
+
+const DYNAMIC_BULLETS = {
+  admin_gap_severe: "When your admin is out, jobs run unmonitored or are handled by someone without deep Commvault knowledge — Datastor's managed service eliminates that single point of failure with 24/7 certified coverage.",
+  admin_stretched: "A stretched IT team with backup as a secondary responsibility is exactly where Copilot adds value — expert oversight without adding headcount.",
+  no_owner: "With no dedicated backup owner, Pilot removes the tribal-knowledge risk and assumes full operational ownership under an SLA.",
+  tribal_knowledge: "Tribal knowledge is a liability. Pilot documents the environment, owns the operations, and ensures continuity regardless of who's on the team.",
+  msp_unhappy: "You're unhappy with your current MSP — Datastor's Commvault-certified engineers own outcomes, not just tickets.",
+  team_overwhelmed: "An overwhelmed team doing backup well is a temporary state. Pilot offloads the operational burden so your team focuses on higher-value work.",
+  support_slow: "You flagged slow support response as a pain. With Datastor, certified engineers who already know your environment are your first call — no tier-1 routing.",
+  support_triage: "Tickets going in circles is a symptom of tier-1 routing. Datastor's model is different — expert engineers own every case end-to-end.",
+  support_ps_push: "If your vendor keeps steering you to Professional Services to resolve issues, you're paying twice. Datastor includes PS-level expertise in the subscription.",
+  support_inconsistent: "Inconsistent support quality is a function of support scale. Datastor's dedicated team delivers consistency because they know your environment.",
+  bad_vendor_incident: "The incident story you shared is exactly what Pilot is built to prevent — we own the outcome during the crisis, not just the ticket.",
+  painful_vendor_incident: "Your last incident resolved, but at a cost. Datastor's managed service ensures the next one doesn't look the same.",
+  support_helpdesk_slow: "Long vendor helpdesk hold times during an incident are unacceptable. Datastor's engineers answer the phone with context, not a ticket number.",
+  support_msp_inconsistent: "Inconsistent MSP quality is a procurement problem as much as a support problem. Datastor is a single accountable party — one SLA, one team.",
+  cost_sw: "You flagged SW licensing as the pain. Datastor's subscription includes Commvault licensing at better unit economics than direct purchase.",
+  cost_hw: "Hardware cost is driving your concern. Datastor converts CapEx hardware refresh into predictable OpEx — no large upfront spend.",
+  cost_ps: "Too much spend on Professional Services means direct Commvault isn't giving you what you need. Datastor includes PS-level expertise in the subscription at no extra cost.",
+  cost_admin: "Internal admin labor is the hidden cost most orgs don't price in. Our managed service replaces that overhead with a predictable subscription.",
+  infra_aging: "Aging hardware (3-4 years old) is approaching the refresh window. Datastor bundles the refresh with licensing and ops — one subscription, no CapEx event.",
+  infra_aging_severe: "5+ year old hardware likely out of support is an unacceptable risk. One failure can be unrecoverable. Datastor refreshes infrastructure as part of the subscription — immediately.",
+  infra_unknown: "Not knowing your hardware age is itself a signal — nobody's watching the basics. Datastor starts with a capacity and health assessment at no cost.",
+  cv_ransomware_gap: "You acknowledged you're not sure what Commvault ransomware capabilities are available. Datastor unlocks features you're already paying for and configures them correctly.",
+  cv_ransomware_gap_partial: "Using some ransomware features but not all means you're not getting full value from Commvault. Datastor closes the configuration gap and maintains it ongoing.",
+  cv_ransomware_gap_severe: "Zero ransomware features configured is an urgent gap. Datastor enables Commvault's full ransomware defense — immutability, air-gap, anomaly detection — as part of onboarding.",
+  ncv_ransomware_low: "Your cyber recovery confidence is low. Datastor delivers Commvault's cleanroom recovery with AD validation built in — no extra integration work.",
+  ncv_ransomware_moderate: "You could recover but haven't tested AD validation. That's exactly the step attackers exploit. Datastor's recovery testing includes clean-identity validation by default.",
+  ransomware_incident: "You've already had an incident. That's the strongest business case. Datastor makes sure you don't go through it twice.",
+  incident_hardware: "Hardware failure caused data loss or extended outage. Datastor's managed infrastructure eliminates that single point of failure.",
+  incident_failed_test: "A failed recovery test means your backup was effectively unusable — the worst possible time to find out. Datastor's managed recovery testing surfaces gaps before they matter.",
+  compliance_immutability: "You flagged immutability as the gap. Datastor is immutable by default — no add-on, no configuration work.",
+  compliance_airgap: "Air-gap is a Datastor architecture default — your auditor will see isolated, tamper-proof copies out of the box.",
+  compliance_retention: "Retention limitations are directly addressed by Commvault's tiered retention. Datastor handles configuration and audit evidence automatically.",
+  compliance_reporting: "You need audit-ready reporting. Datastor delivers retention evidence, job logs, and recovery test documentation you can hand directly to an auditor.",
+  compliance_new: "A new compliance requirement in your program means you need a platform built for it, not bolted onto it. Datastor is compliance-ready by default.",
+  scaling_jobs: "Backup jobs missing windows is a capacity-and-architecture issue. Commvault's distributed architecture plus Datastor's sized infrastructure scales without missing SLAs.",
+  scaling_capacity: "Storage capacity constraints go away with Datastor — we right-size as you grow, without step-function cost increases.",
+  scaling_workloads: "New workloads your current platform can't cover? Commvault natively protects 100+ workload types including SAP HANA, Oracle, IBM i, and mainframe.",
+  scaling_perf: "Performance degradation at scale is a function of architecture. Commvault + Datastor handles petabyte-scale environments without slowing down.",
+  many_products_small_team: "5+ backup products managed by a small team is the exact problem Datastor's single-platform bundle solves — one vendor, one contract, one SLA.",
+  many_products_large: "A sprawling backup stack that grew organically is a consolidation opportunity. Datastor collapses that into one platform with one operational model.",
+  many_products_moderate: "3-4 products is already too many. Consolidating into Datastor reduces vendor relationships and simplifies operations.",
+  renewal_hot: "Your contract expires within 3 months and the incumbent has already quoted — speed matters. Datastor can have a proposal to you this week.",
+  renewal_soon: "Your contract is expiring soon. We have time to build a compelling Datastor proposal and get in before the incumbent anchors your expectations.",
+  renewal_nurture: "You're early in planning. Let's build a Datastor POC into your evaluation so you have real data when it's time to decide.",
+  leadership_consolidate: "Leadership wants vendor consolidation — Datastor's one-vendor, one-contract, one-SLA model maps directly to that mandate.",
+  leadership_opex: "Leadership wants CapEx to OpEx — Datastor is subscription-based by design, delivering predictable OpEx spend.",
+  leadership_security: "Leadership is focused on security and ransomware posture — Datastor's managed service delivers immutability, air-gap, AD validation, and cleanroom recovery as defaults.",
+  leadership_cost: "Leadership wants to reduce IT cost — Datastor's TCO story typically wins on hardware, licensing, PS, and internal admin labor combined.",
+  program_cloud: "New cloud or hybrid workloads in the program need unified coverage. Commvault + Datastor covers on-prem, cloud, SaaS, and edge in one platform.",
+  program_rto: "Tighter RTO/RPO requirements from the new program need a platform that can deliver them and prove them. Datastor's managed recovery testing provides documented evidence.",
+  program_site: "New site or acquisition coverage is a clean greenfield opportunity. Datastor deploys a proven architecture quickly without reinventing anything.",
+  rto_untested: "You have a target but have never tested it — that gap is the risk. Datastor's managed testing gives you documented evidence, not assumptions.",
+  rto_cant_hit: "You've acknowledged the gap: you can't hit your RTO targets today. Pilot's pre-tested runbooks and managed recovery close that gap.",
+  rto_undefined: "No defined RTO/RPO targets means nobody's set the success criteria. Datastor helps define them against business requirements and delivers against them.",
+  rto_informal: "Informal RTO/RPO targets are usually optimistic. Datastor's managed service includes testing that surfaces the real-world gap and closes it.",
+  cyber_untested: "Never having done a full cyber restore test is the single most exposed gap on your call today. Datastor includes documented cleanroom recovery testing — you'll know exactly what works.",
+  cyber_partial: "Partial cyber restore testing leaves gaps you don't know about. Datastor expands testing to your full workload inventory.",
+  cyber_tested_issues: "You tested and found issues — that's an open risk right now. Let us help close it with Commvault cleanroom recovery plus our managed recovery testing.",
+  cv_owned: "You already own Commvault — Datastor extends your existing investment with managed operations and infrastructure. No displacement, no migration.",
+  greenfield: "Clean slate gives you the fastest path to a modern, subscription-based backup architecture."
+};
+
+const RESULTS = {
+  result_copilot: {
+    title: "Datastor.io Copilot",
+    sub: "Advisory + monitoring on top of existing Commvault. No infrastructure change required.",
+    base_why: [
+      "You already own Commvault — Copilot extends your investment with expert oversight, no migration",
+      "Copilot fills the expertise gap without adding headcount — ideal when a stretched team can't grow"
+    ],
+    base_talk: "\"Commvault is running but nobody is really watching it end-to-end. Copilot puts a certified team alongside yours — we monitor, alert, and step in before things go wrong. You keep control, we handle the expertise gap.\"",
+    talk_variants: [
+      { tags: ["cv_ransomware_gap_severe", "cv_ransomware_gap"], text: "\"Here's what jumps out from our conversation — you're paying for Commvault but not using its full ransomware capabilities. Copilot fixes that in week one. We'll audit your config, enable immutability and anomaly detection, and make sure the features you're paying for are actually protecting you.\"" },
+      { tags: ["cost_ps"], text: "\"You've told me Professional Services spend is the real cost issue. Copilot includes that expertise in the subscription — you stop paying by the hour for guidance that should already be part of the platform.\"" }
+    ],
+    steps: [{label:"Book a scoping call",desc:"30-min technical discovery",pri:true},{label:"Free backup health check",desc:"Assess their Commvault config at no cost",pri:false},{label:"Send Copilot one-pager",desc:"Leave-behind for IT leadership",pri:false},{label:"Live demo",desc:"Show dashboard and alerting workflow",pri:false}]
+  },
+  result_pilot: {
+    title: "Datastor.io Pilot",
+    sub: "Fully co-managed Commvault service. Datastor owns backup operations end-to-end.",
+    base_why: [
+      "You already own Commvault — Pilot protects that investment while removing the operational burden",
+      "Pilot is an SLA, not a person — your team gets their time back, we own the outcomes"
+    ],
+    base_talk: "\"Backup is working until it isn't — and then it's a crisis at 2am. Pilot gives you an SLA, not a person. We own monitoring, recovery testing, policy management, and we're accountable when it matters.\"",
+    talk_variants: [
+      { tags: ["bad_vendor_incident"], text: "\"The incident story you shared is why Pilot exists. Slow support escalation during a real event is unacceptable. With Pilot, our certified engineers are on the call immediately with full context of your environment — not reading a ticket from scratch.\"" },
+      { tags: ["no_owner", "tribal_knowledge"], text: "\"What you're describing is backup with no owner. It works until it doesn't, and when it breaks, nobody knows how to fix it. Pilot takes full operational ownership so your business never sits in that gap.\"" },
+      { tags: ["rto_cant_hit"], text: "\"You've acknowledged the gap: you can't hit your RTO targets today. That's a board-level risk. Pilot's pre-tested runbooks and managed recovery close that gap — you'll have documented evidence of what the real recovery time is.\"" },
+      { tags: ["cyber_untested"], text: "\"Never having done a full cyber restore test is the single biggest risk we hear about in discovery. Pilot includes cleanroom recovery testing on a regular cadence — so you know exactly what works before an attack, not during one.\"" }
+    ],
+    steps: [{label:"Pilot demo",desc:"Walk through operations and SLA model",pri:true},{label:"30-day paid POC",desc:"Managed trial on a subset of workloads",pri:false},{label:"Send Pilot service brief",desc:"SLA, scope, and onboarding timeline",pri:false},{label:"Reference customer intro",desc:"Call with a current Pilot customer",pri:false}]
+  },
+  result_bundle_full: {
+    title: "Datastor.io Full Bundle",
+    sub: "Infrastructure + Commvault licensing + managed service. One subscription, one SLA.",
+    base_why: [
+      "No existing Commvault investment — clean slate for the full bundle",
+      "Single vendor, single contract, single SLA — fastest path to a modern backup architecture"
+    ],
+    base_talk: "\"Rather than stitching together hardware, Commvault licensing, and managed service from three different vendors, our bundle gives you all of it under one subscription. One contract, one SLA, one team.\"",
+    talk_variants: [
+      { tags: ["leadership_consolidate"], text: "\"Your new leadership wants vendor consolidation — this is literally the message we sell. One vendor, one contract, one SLA. It lands on a CTO's desk as a win on day one.\"" },
+      { tags: ["leadership_opex"], text: "\"CapEx to OpEx is a board-level conversation. Our bundle converts what would be a large hardware refresh and multi-year licensing purchase into predictable subscription spend. That maps directly to the mandate you've been given.\"" },
+      { tags: ["pain_complex", "many_products_small_team", "many_products_large"], text: "\"You're managing too many products with too small a team. That's a risk, not just an efficiency problem. Our bundle collapses the stack into one platform with one operational model.\"" },
+      { tags: ["pain_scaling"], text: "\"Your current platform can't keep up with the business. That's a growth-driven problem and usually has budget behind it. Let's build a proposal that solves the scaling issue and modernizes the economics at the same time.\"" }
+    ],
+    steps: [{label:"Solution design call",desc:"Size environment, build subscription quote",pri:true},{label:"Full platform demo",desc:"End-to-end: hardware, SW, managed ops",pri:false},{label:"ROI / TCO comparison",desc:"Model current costs vs. Datastor",pri:false},{label:"Pilot workload POC",desc:"Prove on non-critical workloads first",pri:false}]
+  },
+  result_bundle_infra: {
+    title: "Datastor.io Infrastructure Refresh Bundle",
+    sub: "New Datastor appliances + Commvault licensing refresh. Modernize without disruption.",
+    base_why: [
+      "Aging hardware is an unacceptable risk — one failure can be unrecoverable",
+      "Bundle replaces infrastructure and licensing in one motion: simpler, single SLA",
+      "Turns a large CapEx refresh into a predictable monthly subscription"
+    ],
+    base_talk: "\"Once you're out of hardware support, one failure can be unrecoverable. Our bundle replaces the appliances and the licensing in one motion — same Commvault you know, on modern hardware, as a subscription.\"",
+    talk_variants: [
+      { tags: ["cost_hw"], text: "\"Hardware cost is driving your frustration. The bundle solves that directly: new infrastructure, Commvault licensing, and managed ops — all subscription, all predictable. No large CapEx, no surprise refresh cost in year three.\"" }
+    ],
+    steps: [{label:"Free capacity assessment",desc:"We size the replacement at no cost",pri:true},{label:"Refresh vs. bundle comparison",desc:"Total cost: point refresh vs. Datastor",pri:false},{label:"Hardware + demo session",desc:"Appliance specs and managed ops walkthrough",pri:false},{label:"PS scoping call",desc:"Migration complexity and timeline",pri:false}]
+  },
+  result_compliance: {
+    title: "Datastor.io Compliance-Ready Bundle",
+    sub: "Immutable, air-gapped backup with audit documentation built in.",
+    base_why: [
+      "Immutability and air-gap are architecture defaults — not add-ons",
+      "Audit-ready reporting: retention evidence, job logs, recovery test documentation",
+      "Managed service means ongoing compliance — not a one-time setup"
+    ],
+    base_talk: "\"Compliance isn't a one-time checkbox — your insurer and auditors want ongoing evidence. Datastor delivers immutable copies, documented recovery testing, and reports you can hand directly to an auditor.\"",
+    talk_variants: [
+      { tags: ["compliance_immutability", "compliance_airgap"], text: "\"You've flagged the exact capabilities that are defaults in our architecture — immutability and air-gap aren't features we sell on top, they're how Datastor is built. Let's get an auditor into the next conversation and show them what evidence they'd actually get.\"" }
+    ],
+    steps: [{label:"Compliance-focused demo",desc:"Immutability, air-gap, and reporting",pri:true},{label:"Compliance reference materials",desc:"HIPAA, FINRA, cyber insurance cases",pri:false},{label:"Free gap assessment",desc:"Map requirements to Datastor capabilities",pri:false},{label:"Bring in their security team",desc:"CISO or auditor in the next call",pri:false}]
+  }
+};
+
+function determineResult(tags) {
+  const has = (t) => tags.includes(t);
+  const hasAny = (...ts) => ts.some(t => tags.includes(t));
+
+  if (hasAny('compliance_immutability','compliance_airgap','compliance_retention','compliance_reporting','compliance_new','trigger_compliance')) {
+    return 'result_compliance';
+  }
+
+  if (has('cv_owned')) {
+    if (hasAny('infra_aging','infra_aging_severe') && !has('pain_admin')) {
+      return 'result_bundle_infra';
+    }
+    if (hasAny('no_owner','tribal_knowledge','msp_unhappy','admin_gap_severe','cyber_untested','rto_cant_hit','bad_vendor_incident','painful_vendor_incident','support_inconsistent','cv_ransomware_gap_severe','team_overwhelmed')) {
+      return 'result_pilot';
+    }
+    return 'result_copilot';
+  }
+
+  return 'result_bundle_full';
+}
+
+function assembleResult(tags) {
+  const key = determineResult(tags);
+  const base = RESULTS[key];
+  const bullets = [...base.base_why];
+  const seen = new Set();
+  tags.forEach(t => {
+    if (DYNAMIC_BULLETS[t] && !seen.has(t)) {
+      seen.add(t);
+      bullets.push(DYNAMIC_BULLETS[t]);
+    }
+  });
+  const finalBullets = bullets.slice(0, 6);
+  let talk = base.base_talk;
+  for (const v of (base.talk_variants || [])) {
+    if (v.tags.some(t => tags.includes(t))) { talk = v.text; break; }
+  }
+  return { key, title: base.title, sub: base.sub, why: finalBullets, talk, steps: base.steps };
+}
+
+const COMPETITORS = [
+  {name:"Rubrik",type:"Cloud-native data security",bg:"#FEF3EF",border:"#F0997B",tc:"#712B13",sc:"#993C1D",
+   wins:[
+     "Database and app depth — DBAs report Rubrik lacks the surgical tuning options for complex Oracle, SQL, and mainframe clusters. It prefers rigid policy-based SLA domains.",
+     "Node-based scaling cost — Rubrik's pricing scales aggressively as data grows due to its node-based architecture. Every capacity expansion requires additional nodes and licensing. Commvault's distributed architecture scales compute and storage independently, avoiding the step-function cost increases Rubrik customers hit at every growth tier.",
+     "Locked appliance 'black box' — Rubrik's converged appliance model makes deep OS-level troubleshooting slow. Datastor's managed service means our certified engineers own the troubleshooting, not the customer.",
+     "SW-only — no managed ops. Datastor bundles Commvault + infrastructure + managed operations into one subscription.",
+     "Reporting and customization gaps — Rubrik's reporting is consistently flagged as less robust than competitors. Advanced configuration is limited because the platform is strongly policy-driven."
+   ],
+   watch:[
+     "Strong ransomware branding — Zero Trust, anomalous encryption detection, Ruby AI agent. Lead with Datastor's immutability, air-gap, and AD-validated clean-room recovery.",
+     "Best-in-class Gartner/G2 ratings (4.7 stars, 777+ reviews). Don't attack the product; redirect to managed service, workload depth, and TCO.",
+     "Slick, consumer-grade UX — be ready to demo Datastor's operational dashboard confidently."
+   ]},
+  {name:"Veeam",type:"Backup & replication",bg:"#EBF3FC",border:"#85B7EB",tc:"#042C53",sc:"#185FA5",
+   wins:[
+     "Scale breakpoint — Veeam was built for simplicity at small/mid scale. As data grows, customers hit repository throughput limits, proxy contention, and job sprawl — failures that surface during recovery, not in the backup report. Commvault's architecture absorbs scale without that break.",
+     "Enterprise workload depth — Commvault natively protects SAP HANA, IBM i, mainframe, Oracle, and 100+ other apps. Veeam has narrower native app coverage and often requires agents or workarounds for enterprise workloads.",
+     "Hidden infrastructure sprawl — Veeam requires separate backup servers, proxies, repositories, WAN accelerators, and mount servers to scale. Datastor delivers infrastructure + SW + managed ops in one subscription — no architecture assembly required.",
+     "Multi-product confusion — Veeam ships separate products (Backup & Replication, Veeam Backup for Azure, Veeam Backup for M365, Kasten K10) each with their own consoles. Commvault Cloud consolidates this under one unified platform.",
+     "Self-managed burden — Veeam has no native managed service. Datastor delivers Commvault with 24/7 monitoring, recovery testing, and SLA — removing the operational overhead Veeam creates."
+   ],
+   watch:[
+     "Massive install base and brand familiarity — prospects default to it. Challenge with: 'Great for a 200-VM VMware shop. At your scale, the failure modes are different — let me show you.'",
+     "Initial pricing looks lower — but excludes hardware, proxies, admin labor. Build the full TCO case.",
+     "Veeam's Gartner rating is strong (4.6/5 from 1,930 reviews) — don't bash the product, redirect to scale and managed service differentiation."
+   ]},
+  {name:"Cohesity",type:"Data management platform",bg:"#F1F0FE",border:"#AFA9EC",tc:"#26215C",sc:"#534AB7",
+   wins:[
+     "Veritas merger uncertainty — the Cohesity–Veritas integration is expected to take 18–24 months, with nearly 100% product overlap between the two lines. Customers on either NetBackup or Cohesity DataProtect face real uncertainty about which platform survives and what their migration path looks like. Commvault + Datastor is a stable, integrated platform with no forced roadmap disruption.",
+     "Workload coverage gaps — Commvault natively supports Oracle Cloud Infrastructure, Azure AD, Amazon RDS, Azure SQL, Google Cloud SQL, SAP HANA, IBM i, and mainframe. Cohesity's cloud-native and enterprise database coverage is narrower and often relies on third-party integrations.",
+     "Appliance lock-in and scaling cost — Cohesity customers report being unable to mix appliance models or vendors in a cluster, and consistently spend more than with their previous solution. Commvault's distributed architecture runs on flexible infrastructure and Datastor's subscription avoids node-based cost step-functions.",
+     "No native managed service — like Rubrik, Cohesity is a product, not a service. Datastor delivers Commvault + infrastructure + managed operations in one subscription.",
+     "Focus shift away from backup — Cohesity has pivoted messaging toward AI/security (RAG AI, data classification, cyber resilience). Backup is no longer their primary product story — which creates risk for customers whose core need is still reliable backup and recovery."
+   ],
+   watch:[
+     "Strong cyber resilience messaging — DataProtect + DataHawk combo, CERT response team, zero-trust branding. Lead with Commvault's Cleanroom Recovery, immutability, and AD-validated clean recovery.",
+     "Polished UX and high user satisfaction (94% rating, 1,013 reviews). Don't attack the product; redirect to managed service, workload depth, and platform stability post-merger.",
+     "Aggressive enterprise sales motion post-merger. Watch for multi-threading into CISO, IT leadership, and security teams. Be in front of all of them early."
+   ]},
+  {name:"Cloud-native (AWS / Azure)",type:"AWS Backup, Azure Backup, GCP",bg:"#EEF7E5",border:"#97C459",tc:"#173404",sc:"#3B6D11",
+   wins:[
+     "Zero on-prem or hybrid coverage — AWS Backup and Azure Backup can't see workloads outside their own cloud. Datastor fills that gap immediately — physical, VMware, cloud, and edge all covered under one platform.",
+     "No automated recovery testing — Azure Backup restore testing is largely manual; automated DR drills require separate Azure Site Recovery and custom automation. Datastor includes managed recovery testing as part of the service — customers get documented evidence of recovery, not a promise.",
+     "Storage costs explode with snapshots — AWS and Azure native tools rely on full snapshots with minimal deduplication or compression, and offer limited intelligent tiering. Storage consumption grows linearly with retention. Datastor leverages Commvault's global deduplication, compression, and automated tiering across hot/warm/cold/archive — consistently delivering 10–20x storage reduction vs. native snapshot-based backup.",
+     "Snapshots don't understand the application — native cloud backup is crash-consistent snapshot-based. It captures storage state, not application state. Datastor + Commvault is application-aware — it understands SAP HANA, Oracle, SQL, Exchange, and 100+ other workloads, quiescing them properly and enabling granular restore of databases, tables, mailboxes, and individual objects. Snapshot-only recovery often means restoring the entire VM just to recover one record.",
+     "Limited granular restore — AWS Backup lacks point-in-time recovery for databases and fine-grained retention control. Azure Backup has limited application-aware backup for non-Microsoft workloads. Commvault provides enterprise-grade granular recovery across SAP HANA, Oracle, SQL, and 100+ other apps.",
+     "Coverage gaps in SaaS and Microsoft 365 — Microsoft 365 backup from cloud-native tools has known blind spots: Teams chat conversations, Power Platform assets, and Copilot history all have incomplete protection. Commvault covers these natively.",
+     "Fully self-managed — AWS and Azure Backup are services, not managed offerings. The customer still owns configuration, testing, alerting, and recovery execution. Datastor's managed service removes that burden entirely.",
+     "Opaque long-term retention costs — Azure Backup pricing for long-term retention and storage tier transitions is consistently flagged as unclear. Datastor provides predictable subscription pricing with no tier surprises."
+   ],
+   watch:[
+     "'Good enough' perception — cloud-pure shops often default to 'the cloud already protects us.' Reframe around what they're NOT protecting: on-prem, SaaS edge cases (Teams, Copilot), compliance evidence, and restore SLAs.",
+     "Already embedded in their cloud bill — native tools appear cost-free because they're blended into the cloud invoice. Build the TCO case including egress on recovery and admin time.",
+     "Strong integration story — cloud-native tools integrate deeply with their own ecosystem (IAM, CloudWatch, Azure Monitor). Don't fight that; focus on gaps the integration doesn't cover."
+   ]},
+  {name:"Commvault direct",type:"Backup software vendor",bg:"#FEF5E5",border:"#EF9F27",tc:"#412402",sc:"#854F0B",
+   wins:[
+     "SW-only — no managed service. Commvault sells software; the customer owns all operational responsibility. Datastor bundles the same software with infrastructure and 24/7 managed operations under one SLA.",
+     "Steep learning curve and admin burden. Gartner reviewers describe Commvault as 'pretty much needing a full-time engineer focused on governance and maintenance.' Datastor's certified team absorbs that burden.",
+     "Inconsistent direct support. Customer feedback flags tier-1 routing to generic KBs when issues get complex. Datastor is the first line of support — customers talk to certified engineers who already know their environment.",
+     "Procurement complexity. Direct means three separate vendors: Commvault (SW), a hardware OEM, and often an SI. Datastor is one commercial relationship, one contract, one SLA.",
+     "Commvault sells Success Services separately. Commvault offers a paid 'Success Services' tier for monitoring and guidance to 330+ enterprises — an acknowledgment that the software alone isn't enough. Datastor bakes that managed service into the subscription."
+   ],
+   watch:[
+     "Aggressive SW pricing on direct deals. Commvault will sometimes discount to protect direct accounts. Win with TCO — hardware + implementation + admin always favors Datastor.",
+     "Clarify the relationship early. Prospect may not realize Datastor runs on Commvault. We're not a replacement — we're the best way to consume it.",
+     "Don't attack the product. We sell Commvault. Attack the direct-purchase motion and the operational gap it creates, never the platform itself."
+   ]}
+];
+
+const OBJECTIONS = [
+  {tag:"Pricing",q:"\"We can get Commvault cheaper direct or through a reseller.\"",a:"Direct Commvault is software only. Add hardware, implementation, and ongoing management and the total cost is almost always higher than our subscription. We model this side-by-side — most prospects are surprised by the gap."},
+  {tag:"Commvault",q:"\"We already own Commvault — why do we need Datastor?\"",a:"Owning Commvault licenses is different from running a production-grade backup program. Copilot and Pilot add the managed service layer — monitoring, recovery testing, reporting — that most teams can't provide in-house. You keep your investment; we make it work."},
+  {tag:"Competitive",q:"\"We're already looking at Rubrik / Veeam.\"",a:"Both are solid platforms but neither offers a fully managed service on proven enterprise technology. The question is whether they want to own and operate the platform internally, or have a dedicated team do it under a single SLA. That's our differentiator."},
+  {tag:"Timing",q:"\"We're not ready to make a change right now.\"",a:"Understood. Can we do a free backup health check in the meantime? We'll show you exactly where the gaps are so you have the data to build the case internally when the timing is right — no obligation."},
+  {tag:"Cloud",q:"\"We're all-in on cloud — why not just use AWS or Azure Backup?\"",a:"Cloud-native backup leaves on-prem uncovered, has unpredictable egress costs on recovery, and typically doesn't satisfy compliance requirements for immutability or air-gap. Datastor closes those gaps without replacing what you have."},
+  {tag:"Size",q:"\"We're too small for an enterprise solution like Commvault.\"",a:"Datastor makes Commvault's enterprise-grade protection accessible at any size through subscription. You're not buying an enterprise license — you're buying an outcome. The subscription scales to your environment."},
+  {tag:"DIY",q:"\"We have an internal team — we can manage this ourselves.\"",a:"That's great. Our question is always: what does it cost in your team's time vs. having us do it? Backup is rarely anyone's primary job, and the consequences of getting it wrong are high. We're not replacing your team — we're protecting them."},
+  {tag:"RTO/RPO",q:"\"We have RTO/RPO targets and we're confident we meet them.\"",a:"That's good to hear. When did you last do a full isolated cyber restore test — not just a file restore, but a full workload recovery in a clean environment? That's the only way to know for sure. If you have recent test results, we'd love to benchmark against what Datastor delivers."},
+  {tag:"Support",q:"\"Our current vendor gives us support — we don't need a managed service.\"",a:"Vendor support and a managed service are very different things. Vendor support is reactive — you call them when something breaks. A managed service means someone is watching your environment 24/7, proactively catching issues, and owns the outcome. The real question is: who's responsible when something goes wrong at 2am?"}
+];
+
+let history=[], tags=[], summaries=[], curKey='start', selIdx=null, compFilter='All', objFilter='All';
+
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['discovery','competitive','objections'][i]===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  if(t==='competitive') renderComp();
+  if(t==='objections') renderObj();
+}
+
+function renderDisc() {
+  const node = FLOW[curKey];
+  const el = document.getElementById('tab-discovery');
+  const step = history.length;
+  let prog = '<div class="prog-row">';
+  for(let i=0;i<Math.min(step+5,14);i++) prog+=`<div class="prog-pip ${i<step?'done':i===step?'active':''}"></div>`;
+  prog+=`<span class="prog-label">Step ${step+1}</span></div>`;
+  let insight = node.insight ? `<div class="insight-box"><div class="insight-eye">Rep note</div><div class="insight-text">${node.insight}</div></div>` : '';
+  let opts = '<div class="opts">'+node.opts.map((o,i)=>`
+    <button class="opt ${selIdx===i?'sel':''}" onclick="pick(${i})">
+      <div class="opt-letter">${selIdx===i?'&#10003;':String.fromCharCode(65+i)}</div>
+      <span class="opt-label">${o.label}</span>
+    </button>`).join('')+'</div>';
+  let nav = `<div class="nav">${history.length?'<button class="btn-back" onclick="goBack()">&#8592; Back</button>':''}<button class="btn-next ${selIdx!==null?'on':''}" onclick="advance()">Next &#8594;</button></div>`;
+  el.innerHTML = prog+`<div style="margin-bottom:1.5rem"><div class="stage-eye">${node.stage}</div><div class="ask-text">${node.ask}</div></div>`+insight+opts+nav;
+}
+
+function renderResult() {
+  const r = assembleResult(tags);
+  const el = document.getElementById('tab-discovery');
+  let why = r.why.map(w=>`<div class="why-row"><div class="why-dot"></div><div class="why-text">${w}</div></div>`).join('');
+  let steps = r.steps.map(s=>`<button class="step-btn ${s.pri?'pri':''}"><strong>${s.label}</strong><span>${s.desc}</span></button>`).join('');
+  let painSummary = summaries.length ? `<div class="pain-summary"><div class="pain-eye">Pains identified</div><div class="pain-tags">${summaries.map(s=>`<span class="pain-tag">${s}</span>`).join('')}</div></div>` : '';
+  el.innerHTML = `<div class="res-pill">Recommended solution</div>
+    <div class="res-title">${r.title}</div>
+    <div class="res-sub">${r.sub}</div>
+    ${painSummary}
+    <hr class="divider">
+    <div style="margin-bottom:1.25rem"><div class="res-eye">Why this fits</div>${why}</div>
+    <div class="talk-box"><div class="talk-eye">Talk track</div><div class="talk-text">${r.talk}</div></div>
+    <div style="margin-top:1.25rem"><div class="res-eye">Next steps</div><div class="steps-grid">${steps}</div></div>
+    <button class="restart" onclick="restart()">&#8635; New discovery</button>`;
+}
+
+function renderComp() {
+  const el = document.getElementById('tab-competitive');
+  const names = ['All',...COMPETITORS.map(c=>c.name)];
+  let filters = '<div class="comp-filters">'+names.map(n=>`<button class="comp-filter ${compFilter===n?'active':''}" onclick="setCompFilter('${n}')">${n}</button>`).join('')+'</div>';
+  const list = compFilter==='All'?COMPETITORS:COMPETITORS.filter(c=>c.name===compFilter);
+  let cards = list.map(c=>{
+    let wins = c.wins.map(w=>`<div class="comp-row"><div class="comp-icon" style="color:#4f9018">&#10003;</div><div class="comp-text">${w}</div></div>`).join('');
+    let watch = c.watch.map(w=>`<div class="comp-row"><div class="comp-icon" style="color:#b07800">&#9651;</div><div class="comp-text">${w}</div></div>`).join('');
+    return `<div class="comp-card"><div class="comp-head" style="background:${c.bg};border-bottom:1px solid ${c.border}"><div class="comp-name" style="color:${c.tc}">${c.name}</div><div class="comp-type" style="color:${c.sc}">${c.type}</div></div><div class="comp-body"><div><div class="comp-col-eye" style="color:#4f9018">Datastor wins</div>${wins}</div><div><div class="comp-col-eye" style="color:#b07800">Watch out for</div>${watch}</div></div></div>`;
+  }).join('');
+  el.innerHTML = filters+cards;
+}
+
+function renderObj() {
+  const el = document.getElementById('tab-objections');
+  const tagsList = ['All',...new Set(OBJECTIONS.map(o=>o.tag))];
+  let filters = '<div class="obj-filters">'+tagsList.map(t=>`<button class="obj-filter ${objFilter===t?'active':''}" onclick="setObjFilter('${t}')">${t}</button>`).join('')+'</div>';
+  const list = objFilter==='All'?OBJECTIONS:OBJECTIONS.filter(o=>o.tag===objFilter);
+  let cards = list.map(o=>`<div class="obj-card"><div class="obj-q">${o.q}</div><div class="obj-a">${o.a}</div></div>`).join('');
+  el.innerHTML = filters+cards;
+}
+
+function setCompFilter(n){compFilter=n;renderComp();}
+function setObjFilter(t){objFilter=t;renderObj();}
+function pick(i){selIdx=i;renderDisc();}
+
+function advance(){
+  if(selIdx===null)return;
+  const chosen=FLOW[curKey].opts[selIdx];
+  history.push({key:curKey,idx:selIdx,tagsBefore:[...tags],summariesBefore:[...summaries]});
+  tags = [...tags, ...(chosen.tags||[])];
+  if (chosen.summary) summaries.push(chosen.summary);
+  selIdx=null;
+  const next=chosen.next;
+  if(next === '__END__') {
+    renderResult();
+  } else {
+    curKey=next;
+    renderDisc();
+  }
+}
+
+function goBack(){
+  if(!history.length)return;
+  const prev=history.pop();
+  curKey=prev.key;
+  selIdx=prev.idx;
+  tags = prev.tagsBefore;
+  summaries = prev.summariesBefore;
+  renderDisc();
+}
+
+function restart(){history=[];tags=[];summaries=[];curKey='start';selIdx=null;renderDisc();}
+renderDisc();
+</script>
+</body>
+</html>
